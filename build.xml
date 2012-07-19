@@ -1,0 +1,52 @@
+<project name="trainer-box">
+
+	<property name="vagrant.basebox.name" value="${ant.project.name}-base"/>
+
+	<target name="clean">
+		<vagrant arguments="box remove ${vagrant.basebox.name}"/>
+		<delete dir="build"/>
+	</target>
+
+        <target name="prepare">
+                <mkdir dir="build"/>
+		<get src="http://files.vagrantup.com/lucid32.box" dest="build/lucid32.box" skipexisting="true"/>
+		<vagrant arguments="box add ${vagrant.basebox.name} lucid32.box" failonerror="false"/>
+                <copy todir="build" overwrite="true">
+                        <fileset dir="src/vagrant"/>
+                        <filterset>
+                                <filter token="vagrant.basebox.name" value="${vagrant.basebox.name}"/>
+                        </filterset>
+                </copy>
+        </target>
+
+	<target name="build" depends="prepare">
+		<vagrant arguments="up" failonerror="false"/>
+		<vagrant arguments="provision"/>
+	</target>
+
+	<target name="package" depends="build">
+		<delete file="build/package.box"/>
+		<vagrant arguments="package"/>
+	</target>
+
+	<target name="halt">
+		<vagrant arguments="halt"/>
+	</target>
+
+	<macrodef name="vagrant">
+		<attribute name="arguments"/>
+		<attribute name="failonerror" default="true"/>
+
+		<sequential>
+			<condition property="vagrant.command" value="cmd.exe" else="vagrant">
+				<os family="windows"/>
+			</condition>
+			<condition property="vagrant.arguments" value="/c vagrant" else="">
+				<os family="windows"/>
+			</condition>
+			<exec dir="build" executable="${vagrant.command}" failonerror="@{failonerror}">
+				<arg line="${vagrant.arguments} @{arguments}"/>
+			</exec>
+		</sequential>
+	</macrodef>
+</project>

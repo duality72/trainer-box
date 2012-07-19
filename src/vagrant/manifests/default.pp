@@ -62,8 +62,13 @@ file { "/home/vagrant/.ec2":
     group => "vagrant",
 }
 
+$accessContent = '
+AWSAccessKeyId=
+AWSSecretKey=
+'
+
 file { "/home/vagrant/.ec2/access.pl":
-    ensure => "present",
+    content => $accessContent,
     owner => "vagrant",
     group => "vagrant",
 }
